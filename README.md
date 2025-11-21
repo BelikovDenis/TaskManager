@@ -44,17 +44,20 @@
 ### Шаг 1: Клонирование репозитория
 
 ```bash
-git clone <URL-репозитория>
+git clone https://github.com/BelikovDenis/TaskManager.git
 cd task-manager
+
 Шаг 2: Проверка версии Python
 Убедитесь, что у вас установлена корректная версия Python:
 
 bash
 python --version
 # Должно быть: Python 3.13.x
+
 Шаг 3: Установка зависимостей
 bash
 pip install -r requirements.txt
+
 Шаг 4: Запуск приложения
 bash
 python task_manager.py
