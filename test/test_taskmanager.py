@@ -1,12 +1,12 @@
-import pytest
+"""Модуль тестирования TaskManager."""
 import asyncio
-from datetime import datetime, time
-from pathlib import Path
-import tempfile
-import os
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
+from datetime import time
+from unittest.mock import AsyncMock, Mock, patch
 
-from TaskManager import Task, TaskManager, validate_task_input, add_task_to_file, create_file_with_task
+import pytest
+
+from TaskManager import (Task, TaskManager, add_task_to_file,
+                         create_file_with_task, validate_task_input)
 
 
 class TestTask:
@@ -66,9 +66,11 @@ class TestTask:
 
         # Создаем задачу с реальным временем, а не моком
         with patch('TaskManager.datetime') as mock_dt_for_task:
-            mock_dt_for_task.strptime.return_value.time.return_value = time(9, 0)
+            mock_dt_for_task.strptime.return_value.time.return_value = (
+                time(9, 0)
+            )
             task = Task("09:00", "Прошедшая задача")
-        
+
         assert task.should_notify() is True
 
     @patch('TaskManager.datetime')
@@ -81,9 +83,11 @@ class TestTask:
 
         # Создаем задачу с реальным временем, а не моком
         with patch('TaskManager.datetime') as mock_dt_for_task:
-            mock_dt_for_task.strptime.return_value.time.return_value = time(9, 0)
+            mock_dt_for_task.strptime.return_value.time.return_value = (
+                time(9, 0)
+            )
             task = Task("09:00", "Будущая задача")
-        
+
         assert task.should_notify() is False
 
 
@@ -157,12 +161,15 @@ class TestTaskManager:
         # Мокаем should_notify на уровне класса Task
         with patch.object(Task, 'should_notify') as mock_should_notify:
             mock_should_notify.side_effect = [True, False, False]
-            with patch.object(task_manager, '_send_notification', AsyncMock()) as mock_send:
+            with patch.object(
+                task_manager, '_send_notification', AsyncMock()
+            ) as mock_send:
                 await task_manager.check_and_notify()
 
                 # Проверяем что уведомление было отправлено для одной задачи
                 mock_send.assert_called_once_with(sample_tasks[0])
-                assert len(task_manager.tasks) == 2  # Одна задача должна быть удалена
+                # Одна задача должна быть удалена
+                assert len(task_manager.tasks) == 2
 
     @pytest.mark.asyncio
     async def test_send_notification(self, task_manager):
@@ -211,7 +218,9 @@ class TestTaskManager:
         """Тест обработки CancelledError в мониторинге."""
         task_manager._monitoring = True
 
-        with patch.object(task_manager, 'load_tasks', side_effect=asyncio.CancelledError):
+        with patch.object(
+            task_manager, 'load_tasks', side_effect=asyncio.CancelledError
+        ):
             with pytest.raises(asyncio.CancelledError):
                 await task_manager.monitor_tasks()
 
@@ -301,7 +310,6 @@ class TestIntegration:
         assert "09:00 - Утреннее совещание" in captured.out
 
 
-# Тесты для edge cases
 class TestEdgeCases:
     """Тесты граничных случаев."""
 
@@ -311,7 +319,9 @@ class TestEdgeCases:
         tasks = task_manager.parse_tasks_from_text(text)
 
         assert len(tasks) == 1
-        assert tasks[0].description == 'Задача с "кавычками" и спец. символами!'
+        assert tasks[0].description == (
+            'Задача с "кавычками" и спец. символами!'
+        )
 
     def test_multiple_spaces_in_input(self, task_manager):
         """Тест парсинга с множественными пробелами."""
@@ -324,6 +334,10 @@ class TestEdgeCases:
     def test_file_permission_error(self, task_manager, temp_tasks_file):
         """Тест обработки ошибок разрешений файла."""
         # Создаем ситуацию с ошибкой разрешений
-        with patch('pathlib.Path.read_text', side_effect=PermissionError("No permission")):
+        with patch(
+            'pathlib.Path.read_text', side_effect=PermissionError(
+                "No permission"
+            )
+        ):
             result = task_manager.load_tasks()
             assert result is False

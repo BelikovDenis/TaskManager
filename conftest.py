@@ -1,15 +1,32 @@
-import pytest
+"""Pytest configuration file."""
+
 import asyncio
-from datetime import datetime, time
-from pathlib import Path
-import tempfile
 import os
+import tempfile
+from pathlib import Path
+
+import pytest
+
+
+def pytest_configure(config):
+    """Исключаем папки виртуального окружения из тестирования."""
+    config.option.ignore = [
+        "venv",
+        ".venv",
+        "env",
+        ".tox",
+        ".eggs",
+        "build",
+        "dist"
+    ]
 
 
 @pytest.fixture
 def temp_tasks_file():
     """Создает временный файл для тестов."""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+    with tempfile.NamedTemporaryFile(
+        mode='w', suffix='.txt', delete=False, encoding='utf-8'
+    ) as f:
         f.write("09:00 - Утреннее совещание\n")
         f.write("12:30 - Обед\n")
         f.write("15:45 - Встреча с клиентом\n")
@@ -25,7 +42,9 @@ def temp_tasks_file():
 @pytest.fixture
 def empty_tasks_file():
     """Создает пустой временный файл."""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+    with tempfile.NamedTemporaryFile(
+        mode='w', suffix='.txt', delete=False, encoding='utf-8'
+    ) as f:
         temp_path = f.name
 
     yield Path(temp_path)
